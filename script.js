@@ -203,6 +203,29 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // 체지방(%) noUiSlider 커스텀 슬라이더 생성 및 동기화
 window.addEventListener('DOMContentLoaded', function() {
+  // 체중(kg) 커스텀 슬라이더
+  var weightSliderCustom = document.getElementById('weightSliderCustom');
+  var weightSlider = document.getElementById('weightSlider');
+  var weightValueCustom = document.getElementById('weightValueCustom');
+  if (weightSliderCustom && window.noUiSlider) {
+    noUiSlider.create(weightSliderCustom, {
+      start: parseFloat(weightSlider.value) || 60.0,
+      step: 0.1,
+      range: { 'min': 30, 'max': 150 },
+      tooltips: false,
+      pips: { mode: 'steps', density: 10 }
+    });
+    weightSliderCustom.noUiSlider.on('update', function(values, handle) {
+      weightSlider.value = values[handle];
+      weightValueCustom.textContent = values[handle] + 'kg';
+      updateSliderValues();
+    });
+    weightSlider.addEventListener('input', function() {
+      weightSliderCustom.noUiSlider.set(weightSlider.value);
+    });
+  }
+
+  // 체지방(%) 커스텀 슬라이더
   var fatSliderCustom = document.getElementById('fatSliderCustom');
   var fatSlider = document.getElementById('fatSlider');
   var fatValueCustom = document.getElementById('fatValueCustom');
@@ -210,25 +233,39 @@ window.addEventListener('DOMContentLoaded', function() {
     noUiSlider.create(fatSliderCustom, {
       start: parseFloat(fatSlider.value) || 25.0,
       step: 0.1,
-      range: {
-        'min': 10,
-        'max': 50
-      },
+      range: { 'min': 10, 'max': 50 },
       tooltips: false,
-      pips: {
-        mode: 'steps',
-        density: 10
-      }
+      pips: { mode: 'steps', density: 10 }
     });
-    // noUiSlider → input[type=range] 값 동기화
     fatSliderCustom.noUiSlider.on('update', function(values, handle) {
       fatSlider.value = values[handle];
       fatValueCustom.textContent = values[handle] + ' %';
       updateSliderValues();
     });
-    // input[type=range] → noUiSlider 값 동기화 (다른 코드에서 값이 바뀔 때)
     fatSlider.addEventListener('input', function() {
       fatSliderCustom.noUiSlider.set(fatSlider.value);
+    });
+  }
+
+  // 근육량(kg) 커스텀 슬라이더
+  var muscleSliderCustom = document.getElementById('muscleSliderCustom');
+  var muscleSlider = document.getElementById('muscleSlider');
+  var muscleValueCustom = document.getElementById('muscleValueCustom');
+  if (muscleSliderCustom && window.noUiSlider) {
+    noUiSlider.create(muscleSliderCustom, {
+      start: parseFloat(muscleSlider.value) || 30.0,
+      step: 0.1,
+      range: { 'min': 10, 'max': 80 },
+      tooltips: false,
+      pips: { mode: 'steps', density: 10 }
+    });
+    muscleSliderCustom.noUiSlider.on('update', function(values, handle) {
+      muscleSlider.value = values[handle];
+      muscleValueCustom.textContent = values[handle] + 'kg';
+      updateSliderValues();
+    });
+    muscleSlider.addEventListener('input', function() {
+      muscleSliderCustom.noUiSlider.set(muscleSlider.value);
     });
   }
 });
