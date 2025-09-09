@@ -195,6 +195,12 @@ function init() {
   resetForm();
 }
 
+// 날짜 입력란 placeholder를 일본어로 설정
+window.addEventListener('DOMContentLoaded', function() {
+  var dateInput = document.getElementById('dateInput');
+  if (dateInput) dateInput.placeholder = '年-月-日';
+});
+
 // エクスポート (JSON)
 exportBtn.onclick = function() {
   const data = getData();
