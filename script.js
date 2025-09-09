@@ -214,12 +214,10 @@ function init() {
 
 // 날짜 입력란 placeholder를 일본어로 설정
 window.addEventListener('DOMContentLoaded', function() {
+  // 날짜 placeholder
   var dateInput = document.getElementById('dateInput');
   if (dateInput) dateInput.placeholder = '年-月-日';
-});
 
-// 체지방(%) noUiSlider 커스텀 슬라이더 생성 및 동기화
-window.addEventListener('DOMContentLoaded', function() {
   // 체중(kg) 커스텀 슬라이더
   var weightSliderCustom = document.getElementById('weightSliderCustom');
   var weightSlider = document.getElementById('weightSlider');
@@ -228,18 +226,18 @@ window.addEventListener('DOMContentLoaded', function() {
     noUiSlider.create(weightSliderCustom, {
       start: parseFloat(weightSlider.value) || 60.0,
       step: 0.1,
-      range: { 'min': 30, 'max': 150 },
+      range: { 'min': 30, 'max': 80 },
       tooltips: false,
       pips: { mode: 'steps', density: 10 }
     });
     weightSliderCustom.noUiSlider.on('update', function(values, handle) {
       weightSlider.value = values[handle];
       weightValueCustom.textContent = values[handle] + 'kg';
-      updateSliderValues();
     });
     weightSlider.addEventListener('input', function() {
       weightSliderCustom.noUiSlider.set(weightSlider.value);
     });
+    console.log('weightSliderCustom created');
   }
 
   // 체지방(%) 커스텀 슬라이더
@@ -250,18 +248,18 @@ window.addEventListener('DOMContentLoaded', function() {
     noUiSlider.create(fatSliderCustom, {
       start: parseFloat(fatSlider.value) || 25.0,
       step: 0.1,
-      range: { 'min': 10, 'max': 50 },
+      range: { 'min': 10, 'max': 40 },
       tooltips: false,
       pips: { mode: 'steps', density: 10 }
     });
     fatSliderCustom.noUiSlider.on('update', function(values, handle) {
       fatSlider.value = values[handle];
       fatValueCustom.textContent = values[handle] + ' %';
-      updateSliderValues();
     });
     fatSlider.addEventListener('input', function() {
       fatSliderCustom.noUiSlider.set(fatSlider.value);
     });
+    console.log('fatSliderCustom created');
   }
 
   // 근육량(kg) 커스텀 슬라이더
@@ -272,18 +270,18 @@ window.addEventListener('DOMContentLoaded', function() {
     noUiSlider.create(muscleSliderCustom, {
       start: parseFloat(muscleSlider.value) || 30.0,
       step: 0.1,
-      range: { 'min': 10, 'max': 80 },
+      range: { 'min': 10, 'max': 50 },
       tooltips: false,
       pips: { mode: 'steps', density: 10 }
     });
     muscleSliderCustom.noUiSlider.on('update', function(values, handle) {
       muscleSlider.value = values[handle];
       muscleValueCustom.textContent = values[handle] + 'kg';
-      updateSliderValues();
     });
     muscleSlider.addEventListener('input', function() {
       muscleSliderCustom.noUiSlider.set(muscleSlider.value);
     });
+    console.log('muscleSliderCustom created');
   }
 });
 
@@ -340,3 +338,25 @@ importInput.onchange = function(e) {
   };
   reader.readAsText(file);
 };
+
+// compact 모드 토글: 작은 화면 높이일 때 자동 적용
+(function handleCompactMode() {
+  function applyCompact() {
+    const isCompact = window.innerHeight < 680; // 높이가 작으면 compact
+    document.body.classList.toggle('compact', isCompact);
+  }
+  window.addEventListener('resize', applyCompact);
+  window.addEventListener('orientationchange', applyCompact);
+  applyCompact();
+})();
+
+// micro 모드 토글: 매우 작은 화면 높이일 때 자동 적용
+(function handleMicroMode() {
+  function applyMicro() {
+    const isMicro = window.innerHeight < 600; // 더 작은 높이면 micro
+    document.body.classList.toggle('micro', isMicro);
+  }
+  window.addEventListener('resize', applyMicro);
+  window.addEventListener('orientationchange', applyMicro);
+  applyMicro();
+})();
