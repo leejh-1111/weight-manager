@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>体重・体脂肪・筋肉量管理</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>私の健康データ管理</h1>
+    <form id="dataForm">
+      <label>日付
+        <input type="date" id="dateInput" required>
+      </label>
+      <div class="slider-group">
+        <label>体重(kg)
+          <input type="range" id="weightSlider" min="30" max="150" step="0.1">
+          <span id="weightValue">60.0kg</span>
+        </label>
+      </div>
+      <div class="slider-group">
+        <label>体脂肪(%)
+          <input type="range" id="fatSlider" min="10" max="50" step="0.1">
+          <span id="fatValue">25.0%</span>
+        </label>
+      </div>
+      <div class="slider-group">
+        <label>筋肉量(kg)
+          <input type="range" id="muscleSlider" min="10" max="80" step="0.1">
+          <span id="muscleValue">30.0kg</span>
+        </label>
+      </div>
+      <div class="button-group">
+        <button type="submit" id="saveBtn">保存</button>
+        <button type="button" id="updateBtn" disabled>修正</button>
+        <button type="button" id="deleteBtn" disabled>削除</button>
+      </div>
+      <div class="export-import-group">
+        <button type="button" id="exportBtn">エクスポート</button>
+        <label class="import-label">
+          インポート
+          <input type="file" id="importInput" accept=".json,.csv" style="display:none">
+        </label>
+      </div>
+    </form>
+    <div class="period-tabs">
+      <button class="tab-btn active" data-period="week">1週間</button>
+      <button class="tab-btn" data-period="month">1ヶ月</button>
+      <button class="tab-btn" data-period="year">1年</button>
+    </div>
+    <div id="chartContainer">
+      <canvas id="dataChart"></canvas>
+    </div>
+    <div id="dataList"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

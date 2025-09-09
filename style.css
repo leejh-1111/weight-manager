@@ -1,0 +1,164 @@
+body {
+  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+  font-family: 'Pretendard', 'Noto Sans KR', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 420px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(80, 80, 180, 0.08);
+  padding: 32px 20px 24px 20px;
+}
+
+h1 {
+  text-align: center;
+  color: #4f46e5;
+  margin-bottom: 28px;
+  font-size: 1.7rem;
+  letter-spacing: -1px;
+}
+
+form label {
+  display: block;
+  margin-bottom: 18px;
+  color: #222;
+  font-weight: 500;
+}
+
+input[type="date"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-top: 6px;
+  margin-bottom: 10px;
+}
+
+.slider-group {
+  margin-bottom: 18px;
+}
+
+input[type="range"] {
+  width: 80%;
+  accent-color: #6366f1;
+  margin-right: 10px;
+}
+
+#weightValue, #fatValue, #muscleValue {
+  font-weight: bold;
+  color: #6366f1;
+  font-size: 1.1rem;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.button-group button {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.button-group button:disabled {
+  background: #c7d2fe;
+  color: #888;
+  cursor: not-allowed;
+}
+
+.period-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.tab-btn {
+  background: #e0e7ff;
+  color: #6366f1;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 18px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.tab-btn.active {
+  background: #6366f1;
+  color: #fff;
+}
+
+#chartContainer {
+  background: #f1f5f9;
+  border-radius: 12px;
+  padding: 18px 8px 8px 8px;
+  margin-bottom: 18px;
+}
+
+#dataList {
+  margin-top: 18px;
+  font-size: 0.98rem;
+}
+
+.export-import-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+  justify-content: flex-end;
+}
+
+#exportBtn, .import-label {
+  background: #fbbf24;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-right: 0;
+}
+
+#importBtn:active, #exportBtn:active, .import-label:active {
+  background: #f59e42;
+}
+
+.import-label {
+  display: inline-block;
+  cursor: pointer;
+  margin-left: 0;
+}
+
+.import-label input[type="file"] {
+  display: none;
+}
+
+@media (max-width: 500px) {
+  .container {
+    padding: 16px 4px 12px 4px;
+  }
+  h1 {
+    font-size: 1.2rem;
+  }
+  .button-group button, .tab-btn {
+    font-size: 0.95rem;
+    padding: 8px 0;
+  }
+}
