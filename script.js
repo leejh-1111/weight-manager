@@ -72,12 +72,26 @@ dataList.onclick = function(e) {
   }
 };
 
+// 피드백 메시지 표시 함수
+function showFeedback(msg, color = '#22c55e') {
+  const feedback = document.getElementById('feedback');
+  if (!feedback) return;
+  feedback.textContent = msg;
+  feedback.style.background = color;
+  feedback.style.display = 'block';
+  feedback.style.opacity = '1';
+  setTimeout(() => {
+    feedback.style.opacity = '0';
+    setTimeout(() => { feedback.style.display = 'none'; }, 400);
+  }, 1800);
+}
+
 saveBtn.onclick = function(e) {
   e.preventDefault();
   const date = dateInput.value;
-  if (!date) return alert('日付を選択してください！');
+  if (!date) return showFeedback('日付を選択してください！', '#f43f5e');
   const data = getData();
-  if (data.some(d => d.date === date)) return alert('すでに入力された日付です。修正するにはリストから選択してください。');
+  if (data.some(d => d.date === date)) return showFeedback('すでに入力された日付です。修正するにはリストから選択してください。', '#fbbf24');
   data.push({
     date,
     weight: +weightSlider.value,
@@ -88,6 +102,7 @@ saveBtn.onclick = function(e) {
   renderList();
   renderChart(currentPeriod);
   resetForm();
+  showFeedback('保存しました！');
 };
 
 updateBtn.onclick = function(e) {
@@ -106,6 +121,7 @@ updateBtn.onclick = function(e) {
   renderList();
   renderChart(currentPeriod);
   resetForm();
+  showFeedback('修正しました！', '#2563eb');
 };
 
 deleteBtn.onclick = function(e) {
@@ -117,6 +133,7 @@ deleteBtn.onclick = function(e) {
   renderList();
   renderChart(currentPeriod);
   resetForm();
+  showFeedback('削除しました！', '#e11d48');
 };
 
 // 기간별 그래프
@@ -267,6 +284,15 @@ window.addEventListener('DOMContentLoaded', function() {
     muscleSlider.addEventListener('input', function() {
       muscleSliderCustom.noUiSlider.set(muscleSlider.value);
     });
+  }
+});
+
+// 슬라이더 포커스 시 강조 효과(접근성)
+['weightSliderCustom','fatSliderCustom','muscleSliderCustom'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('focusin', () => el.classList.add('slider-focus'));
+    el.addEventListener('focusout', () => el.classList.remove('slider-focus'));
   }
 });
 

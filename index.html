@@ -3,44 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>体重・体脂肪・筋肉量管理</title>
+  <title>健康管理アプリ</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
 </head>
 <body>
   <div class="container">
-    <h1>私の健康データ管理</h1>
+    <h1 class="main-title">健康管理アプリ</h1>
+    <div class="subtitle">今日の健康データを入力してください</div>
+    <div id="feedback" class="feedback" style="display:none;"></div>
     <form id="dataForm">
-      <label>日付
+      <div class="card-input">
+        <label class="input-label"><span class="input-icon">📅</span> 日付</label>
         <input type="date" id="dateInput" required placeholder="年-月-日">
-      </label>
-      <div class="slider-group">
-        <label>体重(kg)</label>
-        <div id="weightSliderCustom" style="margin-bottom:30px;"></div>
-        <span id="weightValueCustom" style="font-size:2em; color:#6366f1; margin-top:10px; display:block; text-align:center;">60.0kg</span>
+      </div>
+      <div class="card-input">
+        <label class="input-label"><span class="input-icon">⚖️</span> 体重(kg)</label>
+        <div id="weightSliderCustom" class="slider-custom"></div>
+        <span id="weightValueCustom" class="slider-value weight">60.0kg</span>
         <input type="range" id="weightSlider" min="30" max="150" step="0.1" style="display:none;">
       </div>
-      <div class="slider-group">
-        <label>体脂肪(%)</label>
-        <div id="fatSliderCustom" style="margin-bottom:30px;"></div>
-        <span id="fatValueCustom" style="font-size:2em; color:#e11d48; margin-top:10px; display:block; text-align:center;">25.0%</span>
+      <div class="card-input">
+        <label class="input-label"><span class="input-icon">💧</span> 体脂肪(%)</label>
+        <div id="fatSliderCustom" class="slider-custom"></div>
+        <span id="fatValueCustom" class="slider-value fat">25.0%</span>
         <input type="range" id="fatSlider" min="10" max="50" step="0.1" style="display:none;">
       </div>
-      <div class="slider-group">
-        <label>筋肉量(kg)</label>
-        <div id="muscleSliderCustom" style="margin-bottom:30px;"></div>
-        <span id="muscleValueCustom" style="font-size:2em; color:#10b981; margin-top:10px; display:block; text-align:center;">30.0kg</span>
+      <div class="card-input">
+        <label class="input-label"><span class="input-icon">💪</span> 筋肉量(kg)</label>
+        <div id="muscleSliderCustom" class="slider-custom"></div>
+        <span id="muscleValueCustom" class="slider-value muscle">30.0kg</span>
         <input type="range" id="muscleSlider" min="10" max="80" step="0.1" style="display:none;">
       </div>
       <div class="button-group">
-        <button type="submit" id="saveBtn">保存</button>
-        <button type="button" id="updateBtn" disabled>修正</button>
-        <button type="button" id="deleteBtn" disabled>削除</button>
+        <button type="submit" id="saveBtn"><span class="btn-icon">💾</span> 保存</button>
+        <button type="button" id="updateBtn" disabled><span class="btn-icon">✏️</span> 修正</button>
+        <button type="button" id="deleteBtn" disabled><span class="btn-icon">🗑️</span> 削除</button>
       </div>
       <div class="export-import-group">
-        <button type="button" id="exportBtn">エクスポート</button>
+        <button type="button" id="exportBtn"><span class="btn-icon">⬇️</span> エクスポート</button>
         <label class="import-label">
-          インポート
+          <span class="btn-icon">⬆️</span> インポート
           <input type="file" id="importInput" accept=".json,.csv" style="display:none">
         </label>
       </div>
