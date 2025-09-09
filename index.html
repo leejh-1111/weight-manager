@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>体重・体脂肪・筋肉量管理</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css">
 </head>
 <body>
   <div class="container">
@@ -20,10 +21,10 @@
         </label>
       </div>
       <div class="slider-group">
-        <label>体脂肪(%)
-          <input type="range" id="fatSlider" min="10" max="50" step="0.1">
-          <span id="fatValue">25.0%</span>
-        </label>
+        <label>体脂肪(%)</label>
+        <div id="fatSliderCustom"></div>
+        <span id="fatValueCustom" style="font-size:2em; color:#e11d48; margin-top:10px; display:block; text-align:center;">25.0%</span>
+        <input type="range" id="fatSlider" min="10" max="50" step="0.1" style="display:none;">
       </div>
       <div class="slider-group">
         <label>筋肉量(kg)
@@ -54,6 +55,7 @@
     </div>
     <div id="dataList"></div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

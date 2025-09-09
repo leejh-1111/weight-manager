@@ -201,6 +201,38 @@ window.addEventListener('DOMContentLoaded', function() {
   if (dateInput) dateInput.placeholder = '年-月-日';
 });
 
+// 체지방(%) noUiSlider 커스텀 슬라이더 생성 및 동기화
+window.addEventListener('DOMContentLoaded', function() {
+  var fatSliderCustom = document.getElementById('fatSliderCustom');
+  var fatSlider = document.getElementById('fatSlider');
+  var fatValueCustom = document.getElementById('fatValueCustom');
+  if (fatSliderCustom && window.noUiSlider) {
+    noUiSlider.create(fatSliderCustom, {
+      start: parseFloat(fatSlider.value) || 25.0,
+      step: 0.1,
+      range: {
+        'min': 10,
+        'max': 50
+      },
+      tooltips: false,
+      pips: {
+        mode: 'steps',
+        density: 10
+      }
+    });
+    // noUiSlider → input[type=range] 값 동기화
+    fatSliderCustom.noUiSlider.on('update', function(values, handle) {
+      fatSlider.value = values[handle];
+      fatValueCustom.textContent = values[handle] + ' %';
+      updateSliderValues();
+    });
+    // input[type=range] → noUiSlider 값 동기화 (다른 코드에서 값이 바뀔 때)
+    fatSlider.addEventListener('input', function() {
+      fatSliderCustom.noUiSlider.set(fatSlider.value);
+    });
+  }
+});
+
 // エクスポート (JSON)
 exportBtn.onclick = function() {
   const data = getData();
