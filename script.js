@@ -1,362 +1,199 @@
-// 슬라이더 값 표시
+// Core JS: CRUD with LocalStorage, inline rulers, Chart.js, import/export (JA)
+
+// Elements -------------------------------------------------------------------
+const dateInput = document.getElementById('dateInput');
 const weightSlider = document.getElementById('weightSlider');
 const fatSlider = document.getElementById('fatSlider');
 const muscleSlider = document.getElementById('muscleSlider');
-const weightValue = document.getElementById('weightValue');
-const fatValue = document.getElementById('fatValue');
-const muscleValue = document.getElementById('muscleValue');
-const dateInput = document.getElementById('dateInput');
+const weightLabel = document.getElementById('weightValueCustom');
+const fatLabel = document.getElementById('fatValueCustom');
+const muscleLabel = document.getElementById('muscleValueCustom');
 const saveBtn = document.getElementById('saveBtn');
 const updateBtn = document.getElementById('updateBtn');
 const deleteBtn = document.getElementById('deleteBtn');
 const dataList = document.getElementById('dataList');
-const periodTabs = document.querySelectorAll('.tab-btn');
 const exportBtn = document.getElementById('exportBtn');
 const importInput = document.getElementById('importInput');
+const periodTabs = document.querySelectorAll('.tab-btn');
+
+// Helpers ---------------------------------------------------------------------
+function getData(){ return JSON.parse(localStorage.getItem('healthData')||'[]'); }
+function setData(d){ localStorage.setItem('healthData', JSON.stringify(d)); }
+function setWeightText(v){ if (weightLabel) weightLabel.textContent = v + 'kg'; }
+function setFatText(v){ if (fatLabel) fatLabel.textContent = v + '%'; }
+function setMuscleText(v){ if (muscleLabel) muscleLabel.textContent = v + 'kg'; }
+function updateSliderValues(){ setWeightText(weightSlider.value); setFatText(fatSlider.value); setMuscleText(muscleSlider.value); }
+
+// Feedback --------------------------------------------------------------------
+function showFeedback(msg, color = '#22c55e'){
+  const el = document.getElementById('feedback'); if(!el) return;
+  el.textContent = msg; el.style.background = color; el.style.display='block'; el.style.opacity='1';
+  setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>{ el.style.display='none'; }, 350); }, 1600);
+}
+
+// Form reset/list --------------------------------------------------------------
 let selectedDate = null;
-
-function updateSliderValues() {
-  weightValue.textContent = weightSlider.value + 'kg';
-  fatValue.textContent = fatSlider.value + '%';
-  muscleValue.textContent = muscleSlider.value + 'kg';
-}
-
-weightSlider.oninput = updateSliderValues;
-fatSlider.oninput = updateSliderValues;
-muscleSlider.oninput = updateSliderValues;
-
-// 데이터 저장 구조: [{date, weight, fat, muscle}]
-function getData() {
-  return JSON.parse(localStorage.getItem('healthData') || '[]');
-}
-function setData(data) {
-  localStorage.setItem('healthData', JSON.stringify(data));
-}
-
-function resetForm() {
-  dateInput.value = '';
-  weightSlider.value = 60;
-  fatSlider.value = 25;
-  muscleSlider.value = 30;
+function resetForm(){
+  if (dateInput) dateInput.value = '';
+  weightSlider.value = 60; fatSlider.value = 25; muscleSlider.value = 30;
   updateSliderValues();
-  selectedDate = null;
-  updateBtn.disabled = true;
-  deleteBtn.disabled = true;
-  saveBtn.disabled = false;
+  selectedDate = null; updateBtn.disabled = true; deleteBtn.disabled = true; saveBtn.disabled=false;
 }
 
-function renderList() {
-  const data = getData().sort((a, b) => b.date.localeCompare(a.date));
-  dataList.innerHTML = data.map(item =>
-    `<div class="data-row${selectedDate === item.date ? ' selected' : ''}" data-date="${item.date}">
-      <b>${item.date}</b> | 体重: ${item.weight}kg | 体脂肪: ${item.fat}% | 筋肉量: ${item.muscle}kg
-    </div>`
+function renderList(){
+  const data = getData().sort((a,b)=>b.date.localeCompare(a.date));
+  dataList.innerHTML = data.map(i=>
+    `<div class="data-row${selectedDate===i.date?' selected':''}" data-date="${i.date}"><b>${i.date}</b> | 体重: ${i.weight}kg | 体脂肪: ${i.fat}% | 筋肉量: ${i.muscle}kg</div>`
   ).join('');
 }
 
-dataList.onclick = function(e) {
-  const row = e.target.closest('.data-row');
-  if (!row) return;
-  const data = getData();
-  const item = data.find(d => d.date === row.dataset.date);
-  if (item) {
-    dateInput.value = item.date;
-    weightSlider.value = item.weight;
-    fatSlider.value = item.fat;
-    muscleSlider.value = item.muscle;
-    updateSliderValues();
-    selectedDate = item.date;
-    updateBtn.disabled = false;
-    deleteBtn.disabled = false;
-    saveBtn.disabled = true;
-  }
+dataList.onclick = function(e){
+  const row = e.target.closest('.data-row'); if(!row) return;
+  const item = getData().find(d=>d.date===row.dataset.date); if(!item) return;
+  dateInput.value=item.date; weightSlider.value=item.weight; fatSlider.value=item.fat; muscleSlider.value=item.muscle;
+  updateSliderValues(); selectedDate=item.date; updateBtn.disabled=false; deleteBtn.disabled=false; saveBtn.disabled=true;
 };
 
-// 피드백 메시지 표시 함수
-function showFeedback(msg, color = '#22c55e') {
-  const feedback = document.getElementById('feedback');
-  if (!feedback) return;
-  feedback.textContent = msg;
-  feedback.style.background = color;
-  feedback.style.display = 'block';
-  feedback.style.opacity = '1';
-  setTimeout(() => {
-    feedback.style.opacity = '0';
-    setTimeout(() => { feedback.style.display = 'none'; }, 400);
-  }, 1800);
-}
-
-saveBtn.onclick = function(e) {
-  e.preventDefault();
-  const date = dateInput.value;
-  if (!date) return showFeedback('日付を選択してください！', '#f43f5e');
-  const data = getData();
-  if (data.some(d => d.date === date)) return showFeedback('すでに入力された日付です。修正するにはリストから選択してください。', '#fbbf24');
-  data.push({
-    date,
-    weight: +weightSlider.value,
-    fat: +fatSlider.value,
-    muscle: +muscleSlider.value
-  });
-  setData(data);
-  renderList();
-  renderChart(currentPeriod);
-  resetForm();
-  showFeedback('保存しました！');
+// Save/Update/Delete -----------------------------------------------------------
+saveBtn.onclick = function(e){
+  e.preventDefault(); const date = dateInput.value; if(!date) return showFeedback('日付を選択してください！', '#f43f5e');
+  const data = getData(); if (data.some(d=>d.date===date)) return showFeedback('すでに入力された日付です。修正するにはリストから選択してください。', '#fbbf24');
+  data.push({ date, weight:+weightSlider.value, fat:+fatSlider.value, muscle:+muscleSlider.value }); setData(data);
+  renderList(); renderChart(currentPeriod); resetForm(); showFeedback('保存しました！');
 };
 
-updateBtn.onclick = function(e) {
-  e.preventDefault();
-  if (!selectedDate) return;
-  const data = getData();
-  const idx = data.findIndex(d => d.date === selectedDate);
-  if (idx === -1) return;
-  data[idx] = {
-    date: dateInput.value,
-    weight: +weightSlider.value,
-    fat: +fatSlider.value,
-    muscle: +muscleSlider.value
-  };
-  setData(data);
-  renderList();
-  renderChart(currentPeriod);
-  resetForm();
-  showFeedback('修正しました！', '#2563eb');
+updateBtn.onclick = function(e){
+  e.preventDefault(); if(!selectedDate) return; const data=getData(); const idx=data.findIndex(d=>d.date===selectedDate); if(idx<0) return;
+  data[idx] = { date: dateInput.value, weight:+weightSlider.value, fat:+fatSlider.value, muscle:+muscleSlider.value };
+  setData(data); renderList(); renderChart(currentPeriod); resetForm(); showFeedback('修正しました！', '#2563eb');
 };
 
-deleteBtn.onclick = function(e) {
-  e.preventDefault();
-  if (!selectedDate) return;
-  let data = getData();
-  data = data.filter(d => d.date !== selectedDate);
-  setData(data);
-  renderList();
-  renderChart(currentPeriod);
-  resetForm();
-  showFeedback('削除しました！', '#e11d48');
+deleteBtn.onclick = function(e){
+  e.preventDefault(); if(!selectedDate) return; let data=getData(); data=data.filter(d=>d.date!==selectedDate);
+  setData(data); renderList(); renderChart(currentPeriod); resetForm(); showFeedback('削除しました！', '#e11d48');
 };
 
-// 기간별 그래프
-let chart = null;
-let currentPeriod = 'week';
-periodTabs.forEach(tab => {
-  tab.onclick = function() {
-    periodTabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    currentPeriod = tab.dataset.period;
-    renderChart(currentPeriod);
-  };
-});
-
-function getPeriodData(period) {
-  const data = getData().sort((a, b) => a.date.localeCompare(b.date));
-  const today = new Date();
-  let fromDate;
-  if (period === 'week') {
-    fromDate = new Date(today);
-    fromDate.setDate(today.getDate() - 6);
-  } else if (period === 'month') {
-    fromDate = new Date(today);
-    fromDate.setMonth(today.getMonth() - 1);
-  } else {
-    fromDate = new Date(today);
-    fromDate.setFullYear(today.getFullYear() - 1);
-  }
-  return data.filter(d => new Date(d.date) >= fromDate);
-}
-
-function renderChart(period) {
-  const ctx = document.getElementById('dataChart').getContext('2d');
-  const periodData = getPeriodData(period);
-  const labels = periodData.map(d => d.date);
-  const weights = periodData.map(d => d.weight);
-  const fats = periodData.map(d => d.fat);
-  const muscles = periodData.map(d => d.muscle);
-  if (chart) chart.destroy();
-  chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label: '体重(kg)', data: weights, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', tension: 0.3, fill: false },
-        { label: '体脂肪(%)', data: fats, borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.1)', tension: 0.3, fill: false },
-        { label: '筋肉量(kg)', data: muscles, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.3, fill: false }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: true, position: 'top' }
-      },
-      scales: {
-        x: { title: { display: true, text: '日付' } },
-        y: { title: { display: true, text: '数値' } }
-      }
-    }
-  });
-}
-
-// Chart.js CDN 동적 로드
-(function loadChartJs() {
-  if (window.Chart) return init();
-  const script = document.createElement('script');
-  script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
-  script.onload = init;
-  document.head.appendChild(script);
-})();
-
-function init() {
-  updateSliderValues();
-  renderList();
-  renderChart(currentPeriod);
-  resetForm();
-}
-
-// 날짜 입력란 placeholder를 일본어로 설정
-window.addEventListener('DOMContentLoaded', function() {
-  // 날짜 placeholder
-  var dateInput = document.getElementById('dateInput');
-  if (dateInput) dateInput.placeholder = '年-月-日';
-
-  // 체중(kg) 커스텀 슬라이더
-  var weightSliderCustom = document.getElementById('weightSliderCustom');
-  var weightSlider = document.getElementById('weightSlider');
-  var weightValueCustom = document.getElementById('weightValueCustom');
-  if (weightSliderCustom && window.noUiSlider) {
-    noUiSlider.create(weightSliderCustom, {
-      start: parseFloat(weightSlider.value) || 60.0,
-      step: 0.1,
-      range: { 'min': 30, 'max': 80 },
-      tooltips: false,
-      pips: { mode: 'steps', density: 10 }
-    });
-    weightSliderCustom.noUiSlider.on('update', function(values, handle) {
-      weightSlider.value = values[handle];
-      weightValueCustom.textContent = values[handle] + 'kg';
-    });
-    weightSlider.addEventListener('input', function() {
-      weightSliderCustom.noUiSlider.set(weightSlider.value);
-    });
-    console.log('weightSliderCustom created');
-  }
-
-  // 체지방(%) 커스텀 슬라이더
-  var fatSliderCustom = document.getElementById('fatSliderCustom');
-  var fatSlider = document.getElementById('fatSlider');
-  var fatValueCustom = document.getElementById('fatValueCustom');
-  if (fatSliderCustom && window.noUiSlider) {
-    noUiSlider.create(fatSliderCustom, {
-      start: parseFloat(fatSlider.value) || 25.0,
-      step: 0.1,
-      range: { 'min': 10, 'max': 40 },
-      tooltips: false,
-      pips: { mode: 'steps', density: 10 }
-    });
-    fatSliderCustom.noUiSlider.on('update', function(values, handle) {
-      fatSlider.value = values[handle];
-      fatValueCustom.textContent = values[handle] + ' %';
-    });
-    fatSlider.addEventListener('input', function() {
-      fatSliderCustom.noUiSlider.set(fatSlider.value);
-    });
-    console.log('fatSliderCustom created');
-  }
-
-  // 근육량(kg) 커스텀 슬라이더
-  var muscleSliderCustom = document.getElementById('muscleSliderCustom');
-  var muscleSlider = document.getElementById('muscleSlider');
-  var muscleValueCustom = document.getElementById('muscleValueCustom');
-  if (muscleSliderCustom && window.noUiSlider) {
-    noUiSlider.create(muscleSliderCustom, {
-      start: parseFloat(muscleSlider.value) || 30.0,
-      step: 0.1,
-      range: { 'min': 10, 'max': 50 },
-      tooltips: false,
-      pips: { mode: 'steps', density: 10 }
-    });
-    muscleSliderCustom.noUiSlider.on('update', function(values, handle) {
-      muscleSlider.value = values[handle];
-      muscleValueCustom.textContent = values[handle] + 'kg';
-    });
-    muscleSlider.addEventListener('input', function() {
-      muscleSliderCustom.noUiSlider.set(muscleSlider.value);
-    });
-    console.log('muscleSliderCustom created');
-  }
-});
-
-// 슬라이더 포커스 시 강조 효과(접근성)
-['weightSliderCustom','fatSliderCustom','muscleSliderCustom'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) {
-    el.addEventListener('focusin', () => el.classList.add('slider-focus'));
-    el.addEventListener('focusout', () => el.classList.remove('slider-focus'));
-  }
-});
-
-// エクスポート (JSON)
-exportBtn.onclick = function() {
-  const data = getData();
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = '健康データ.json';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 0);
+// Import/Export ----------------------------------------------------------------
+exportBtn.onclick = function(){
+  const blob = new Blob([JSON.stringify(getData(), null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='健康データ.json';
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 0);
 };
 
-// インポート (JSON)
-importInput.onchange = function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    try {
-      const imported = JSON.parse(evt.target.result);
-      if (!Array.isArray(imported)) throw new Error('ファイル形式が正しくありません。');
-      // 日付重複防止: 既存データとマージ
-      const oldData = getData();
-      const merged = [...oldData];
-      imported.forEach(newItem => {
-        if (!merged.some(d => d.date === newItem.date)) {
-          merged.push(newItem);
-        }
-      });
-      setData(merged);
-      renderList();
-      renderChart(currentPeriod);
-      alert('データが正常にインポートされました！');
-    } catch (err) {
-      alert('インポート失敗: ' + err.message);
-    }
-    importInput.value = '';
-  };
+importInput.onchange = function(e){
+  const file = e.target.files[0]; if(!file) return; const reader = new FileReader();
+  reader.onload = (evt)=>{ try { const imported = JSON.parse(evt.target.result); if(!Array.isArray(imported)) throw new Error('形式が正しくありません');
+      const cur = getData(); const merged=[...cur]; imported.forEach(n=>{ if(!merged.some(d=>d.date===n.date)) merged.push(n); });
+      setData(merged); renderList(); renderChart(currentPeriod); alert('インポート成功');
+    } catch(err){ alert('インポート失敗: '+err.message); } importInput.value=''; };
   reader.readAsText(file);
 };
 
-// compact 모드 토글: 작은 화면 높이일 때 자동 적용
-(function handleCompactMode() {
-  function applyCompact() {
-    const isCompact = window.innerHeight < 680; // 높이가 작으면 compact
-    document.body.classList.toggle('compact', isCompact);
-  }
-  window.addEventListener('resize', applyCompact);
-  window.addEventListener('orientationchange', applyCompact);
-  applyCompact();
-})();
+// Chart -----------------------------------------------------------------------
+let chart=null; let currentPeriod='week';
+periodTabs.forEach(tab=>{ tab.onclick=()=>{ periodTabs.forEach(t=>t.classList.remove('active')); tab.classList.add('active'); currentPeriod=tab.dataset.period; renderChart(currentPeriod); }; });
 
-// micro 모드 토글: 매우 작은 화면 높이일 때 자동 적용
-(function handleMicroMode() {
-  function applyMicro() {
-    const isMicro = window.innerHeight < 600; // 더 작은 높이면 micro
-    document.body.classList.toggle('micro', isMicro);
+function getPeriodData(period){
+  const data = getData().sort((a,b)=>a.date.localeCompare(b.date)); const now=new Date(); let from;
+  if(period==='week'){ from=new Date(now); from.setDate(now.getDate()-6); }
+  else if(period==='month'){ from=new Date(now); from.setMonth(now.getMonth()-1); }
+  else { from=new Date(now); from.setFullYear(now.getFullYear()-1); }
+  return data.filter(d=> new Date(d.date) >= from);
+}
+
+function renderChart(period){
+  const ctx = document.getElementById('dataChart').getContext('2d'); const d=getPeriodData(period);
+  const labels=d.map(x=>x.date); const w=d.map(x=>x.weight); const f=d.map(x=>x.fat); const m=d.map(x=>x.muscle);
+  if(chart) chart.destroy();
+  chart = new Chart(ctx,{ type:'line', data:{ labels, datasets:[
+      { label:'体重(kg)', data:w, borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,0.1)', tension:.3, fill:false },
+      { label:'体脂肪(%)', data:f, borderColor:'#f43f5e', backgroundColor:'rgba(244,63,94,0.1)', tension:.3, fill:false },
+      { label:'筋肉量(kg)', data:m, borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.1)', tension:.3, fill:false }
+    ]}, options:{ responsive:true, plugins:{ legend:{display:true, position:'top'} }, scales:{ x:{title:{display:true,text:'日付'}}, y:{title:{display:true,text:'数値'}} } } });
+}
+
+// Load Chart.js then init ------------------------------------------------------
+(function loadChartJs(){ if(window.Chart) return init(); const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/chart.js'; s.onload=init; document.head.appendChild(s); })();
+
+function init(){
+  // set placeholder (JA)
+  if (dateInput) dateInput.placeholder = '年-月-日';
+  // wire sliders text
+  [weightSlider,fatSlider,muscleSlider].forEach(el=> el.addEventListener('input', updateSliderValues));
+  updateSliderValues(); renderList(); renderChart(currentPeriod); resetForm();
+  initRulers();
+}
+
+// Inline rulers ---------------------------------------------------------------
+function buildInlineRuler(trackEl, min, max, step){
+  trackEl.innerHTML=''; const total=Math.round((max-min)/step);
+  for(let i=0;i<=total;i++){
+    const v=+(min+i*step).toFixed(1); const div=document.createElement('div');
+    const isMajor = (i % Math.round(1/step) === 0);
+    div.className='ruler-tick'+(isMajor?' major':'');
+    const t=document.createElement('div'); t.className='t';
+    const lbl=document.createElement('div'); lbl.className='label'; if(isMajor) lbl.textContent=String(v).replace(/\.0$/,'');
+    div.appendChild(t); div.appendChild(lbl); trackEl.appendChild(div);
   }
-  window.addEventListener('resize', applyMicro);
-  window.addEventListener('orientationchange', applyMicro);
-  applyMicro();
-})();
+}
+
+function wireRuler(trackEl, sliderEl, labelEl, unit, min, max, step){
+  if(!trackEl||!sliderEl) return; buildInlineRuler(trackEl,min,max,step);
+  const getStepPx=()=>{ const a=trackEl.children[0], b=trackEl.children[1]; return (!a||!b)?16:Math.max(8, Math.round(b.getBoundingClientRect().left - a.getBoundingClientRect().left)); };
+  const center=()=> trackEl.clientWidth/2;
+  const toIndex=(v)=> Math.round((v-min)/step);
+  const scrollToIndex=(idx)=>{ trackEl.scrollLeft = idx*getStepPx() - center(); };
+  const syncFromSlider=()=>{ const v=parseFloat(sliderEl.value); if(labelEl) labelEl.textContent=v+unit; scrollToIndex(toIndex(v)); highlightNearestLabel(trackEl); };
+  sliderEl.addEventListener('input', syncFromSlider);
+  trackEl.addEventListener('scroll', ()=>{ window.requestAnimationFrame(()=>{
+    const idx = Math.round((trackEl.scrollLeft + center())/getStepPx());
+    const v = +(min + idx*step).toFixed(1);
+    sliderEl.value = v; if(labelEl) labelEl.textContent = v+unit; highlightNearestLabel(trackEl);
+    updateSliderValues();
+  }); });
+  // snap
+  let snapT; trackEl.addEventListener('scroll', ()=>{ clearTimeout(snapT); snapT=setTimeout(()=>{ scrollToIndex(Math.round((trackEl.scrollLeft + center())/getStepPx())); }, 60); }, {passive:true});
+  // drag support (track/pointer/wrap)
+  addDragScroll(trackEl.parentElement, trackEl); addDragScroll(trackEl, trackEl); addPointerDrag(trackEl.parentElement.querySelector('.ruler-pointer'), trackEl);
+  // initial
+  syncFromSlider();
+}
+
+function highlightNearestLabel(trackEl){
+  const rect = trackEl.getBoundingClientRect(); const cx=rect.left+rect.width/2; let target=null, best=1e9;
+  Array.from(trackEl.children).forEach(el=>{ const r=el.getBoundingClientRect(); const d=Math.abs((r.left+r.width/2)-cx); if(d<best){best=d; target=el;} });
+  trackEl.querySelectorAll('.label').forEach(l=>{ l.style.fontWeight='700'; l.style.color='#475569'; });
+  const lab = target?.querySelector('.label'); if(lab){ lab.style.fontWeight='900'; lab.style.color='#111827'; }
+}
+
+function addDragScroll(dragSource, scrollTarget){
+  if(!dragSource||!scrollTarget) return; let down=false, sx=0, start=0;
+  const onDown=(e)=>{ down=true; sx=(e.touches?e.touches[0].clientX:e.clientX); start=scrollTarget.scrollLeft; dragSource.classList.add('dragging'); e.preventDefault(); };
+  const onMove=(e)=>{ if(!down) return; const x=(e.touches?e.touches[0].clientX:e.clientX); scrollTarget.scrollLeft = start - (x - sx); e.preventDefault(); };
+  const onUp=()=>{ down=false; dragSource.classList.remove('dragging'); };
+  dragSource.addEventListener('mousedown', onDown, {passive:false}); dragSource.addEventListener('mousemove', onMove, {passive:false}); window.addEventListener('mouseup', onUp);
+  dragSource.addEventListener('touchstart', onDown, {passive:false}); dragSource.addEventListener('touchmove', onMove, {passive:false}); window.addEventListener('touchend', onUp);
+}
+
+function addPointerDrag(pointerEl, trackEl){
+  if(!pointerEl||!trackEl) return; let down=false, sx=0, start=0; pointerEl.style.touchAction='none';
+  const onDown=(e)=>{ down=true; sx=e.clientX; start=trackEl.scrollLeft; pointerEl.setPointerCapture?.(e.pointerId); e.preventDefault(); };
+  const onMove=(e)=>{ if(!down) return; const dx=e.clientX-sx; trackEl.scrollLeft=start+dx; e.preventDefault(); };
+  const onEnd=()=>{ down=false; };
+  pointerEl.addEventListener('pointerdown', onDown, {passive:false}); pointerEl.addEventListener('pointermove', onMove, {passive:false}); pointerEl.addEventListener('pointerup', onEnd); pointerEl.addEventListener('pointercancel', onEnd); pointerEl.addEventListener('pointerleave', onEnd);
+}
+
+function initRulers(){
+  wireRuler(document.getElementById('weightRulerTrack'), weightSlider, weightLabel, 'kg', 30, 80, 0.1);
+  wireRuler(document.getElementById('fatRulerTrack'), fatSlider, fatLabel, '%', 10, 40, 0.1);
+  wireRuler(document.getElementById('muscleRulerTrack'), muscleSlider, muscleLabel, 'kg', 10, 50, 0.1);
+  // clicking large value recenters ruler
+  weightLabel?.addEventListener('click', ()=> wireRuler(document.getElementById('weightRulerTrack'), weightSlider, weightLabel, 'kg', 30,80,0.1));
+  fatLabel?.addEventListener('click', ()=> wireRuler(document.getElementById('fatRulerTrack'), fatSlider, fatLabel, '%', 10,40,0.1));
+  muscleLabel?.addEventListener('click', ()=> wireRuler(document.getElementById('muscleRulerTrack'), muscleSlider, muscleLabel, 'kg', 10,50,0.1));
+}
+
+// Topbar date -----------------------------------------------------------------
+(function(){ const el=document.getElementById('topbarDate'); if(!el) return; const d=new Date(); el.textContent=`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`; })();
+
+

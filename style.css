@@ -14,287 +14,55 @@ body {
   padding: 36px 18px 12px 18px;
 }
 
-.main-title {
-  text-align: center;
-  color: #2563eb;
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin-bottom: 10px;
-  letter-spacing: -1px;
-}
-.subtitle {
-  text-align: center;
-  color: #475569;
-  font-size: 1.15rem;
-  margin-bottom: 24px;
-}
+.main-title { text-align: center; color: #2563eb; font-size: 2rem; font-weight: 700; margin-bottom: 10px; letter-spacing: -1px; }
+.subtitle { text-align: center; color: #475569; font-size: 1rem; margin-bottom: 16px; }
 
-.feedback {
-  text-align: center;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #fff;
-  background: #22c55e;
-  border-radius: 10px;
-  margin-bottom: 18px;
-  padding: 10px 0;
-  transition: opacity 0.3s;
-}
+.feedback { text-align: center; font-size: 1rem; font-weight: 700; color: #fff; background: #22c55e; border-radius: 10px; margin-bottom: 12px; padding: 8px 0; transition: opacity 0.3s; }
 
-.card-input {
-  background: #f1f5f9;
-  border-radius: 10px;
-  padding: 10px 8px 6px 8px;
-  margin-bottom: 1px;
-  box-shadow: 0 2px 8px rgba(99,102,241,0.06);
-  font-size: 0.95rem;
-}
-.input-label {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #334155;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.input-icon {
-  font-size: 1.3em;
-}
+.card-input { background: #f1f5f9; border-radius: 10px; padding: 10px 8px 10px 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(99,102,241,0.06); font-size: 0.95rem; }
+.input-label { font-size: 1.05rem; font-weight: 700; color: #334155; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.input-icon { font-size: 1.2em; }
 
-input[type="date"] {
-  width: 50%;
-  min-width: 180px;
-  max-width: 260px;
-  margin-left: auto;
-  margin-right: auto;
-  display: block;
-  padding: 12px 14px;
-  border: 2px solid #c7d2fe;
-  border-radius: 8px;
-  font-size: 1.15rem;
-  margin-top: 6px;
-  margin-bottom: 10px;
-  background: #fff;
-  color: #222;
-}
+input[type="date"] { width: 90%; min-width: 180px; max-width: 260px; margin: 6px auto 8px auto; display: block; padding: 10px 12px; border: 2px solid #c7d2fe; border-radius: 8px; font-size: 1rem; background: #fff; color: #222; }
 
-input[type="range"] {
-  display: none !important;
-}
-
-/* fatSlider는 표시되도록 강제 */
-#fatSlider { display: block !important; width: 80%; margin: 6px auto; }
-#weightSlider, #muscleSlider { display: block !important; width: 80%; margin: 6px auto; }
-
-.slider-custom {
-  margin-bottom: 18px;
-  max-width: 50%;
-  margin-left: auto;
-  margin-right: auto;
-}
-.slider-value {
-  font-size: 1.6rem;
-  font-weight: 700;
-  display: block;
-  text-align: center;
-  margin-bottom: 0.3em;
-  margin-top: 20px;
-  letter-spacing: 0.08em;
-}
+/* 값 라벨 */
+.slider-value { font-size: 1.6rem; font-weight: 800; text-align: center; margin: 6px 0; letter-spacing: 0.04em; cursor: pointer; display:flex; justify-content:center; width:100%; margin-left:auto; margin-right:auto; }
 .slider-value.weight { color: #2563eb; }
 .slider-value.fat { color: #e11d48; }
 .slider-value.muscle { color: #10b981; }
 
-.noUi-target {
-  max-width: 100%;
-  height: 18px;
-  background: #e0e7ff;
-  border-radius: 8px;
-  border: none;
-  box-shadow: 0 1px 4px rgba(99,102,241,0.08);
-}
-.noUi-horizontal .noUi-handle {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #6366f1;
-  border: 3px solid #fff;
-  top: -13px;
-  box-shadow: 0 2px 8px rgba(99,102,241,0.15);
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.noUi-horizontal .noUi-handle:active {
-  background: #2563eb;
-}
-.noUi-connect {
-  background: #6366f1;
-}
-.noUi-pips {
-  font-size: 1.05rem;
-  color: #64748b;
-}
+/* 인라인 눈금자 */
+.ruler-wrap { position: relative; height: 110px; background:#fff; border-radius:10px; border:1px solid #e2e8f0; overflow:hidden; padding-bottom: 14px; touch-action:none; cursor: grab; }
+.ruler-wrap.dragging { cursor: grabbing; }
+.ruler-track { position:absolute; inset:0; overflow-x:auto; overflow-y:hidden; display:flex; flex-wrap:nowrap; scroll-snap-type: x mandatory; padding: 10px 40px 26px 40px; -webkit-overflow-scrolling: touch; z-index:1; user-select: none; touch-action: none; }
+.ruler-track::-webkit-scrollbar { display:none; }
+.ruler-tick { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; flex: 0 0 16px; height:100%; }
+.ruler-tick .t { width:2px; height:16px; background:#94a3b8; }
+.ruler-tick.major .t { height:28px; background:#0f172a; }
+.ruler-tick .label { font-size:.88rem; color:#475569; margin-top:8px; }
+.ruler-pointer { position:absolute; left:50%; top:12px; bottom:24px; width:2px; background:#ef4444; z-index:2; cursor: ew-resize; }
+.ruler-pointer::after { content:''; position:absolute; left:50%; top:-6px; width:18px; height:18px; margin-left:-9px; background:#ef4444; border-radius:50%; box-shadow:0 0 0 2px #fff inset; }
 
-.button-group {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-.button-group button {
-  flex: 1;
-  padding: 16px 0;
-  border: none;
-  border-radius: 10px;
-  background: #2563eb;
-  color: #fff;
-  font-size: 1.25rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-.button-group button:disabled {
-  background: #c7d2fe;
-  color: #888;
-  cursor: not-allowed;
-}
-.btn-icon {
-  font-size: 1.3em;
-}
+/* 버튼/탭/차트 */
+.button-group { display: flex; gap: 10px; margin: 10px 0; }
+.button-group button { flex: 1; padding: 12px 0; border: none; border-radius: 10px; background: #2563eb; color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; }
+.button-group button:disabled { background: #c7d2fe; color: #888; cursor: not-allowed; }
+.btn-icon { font-size: 1.2em; }
 
-.export-import-group {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 18px;
-  justify-content: flex-end;
-}
-#exportBtn, .import-label {
-  background: #fbbf24;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 12px 22px;
-  font-size: 1.15rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s;
-  margin-right: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-#importBtn:active, #exportBtn:active, .import-label:active {
-  background: #f59e42;
-}
-.import-label {
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-  margin-left: 0;
-}
-.import-label input[type="file"] {
-  display: none;
-}
+.export-import-group { display: flex; gap: 10px; margin-bottom: 12px; justify-content: flex-end; }
+#exportBtn, .import-label { background: #fbbf24; color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 
-.period-tabs {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 18px;
-}
-.tab-btn {
-  background: #e0e7ff;
-  color: #2563eb;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 24px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-.tab-btn.active {
-  background: #2563eb;
-  color: #fff;
-}
+.period-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; }
+.tab-btn { background: #e0e7ff; color: #2563eb; border: none; border-radius: 8px; padding: 8px 18px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+.tab-btn.active { background: #2563eb; color: #fff; }
 
-#chartContainer {
-  background: #f1f5f9;
-  border-radius: 14px;
-  padding: 18px 8px 8px 8px;
-  margin-bottom: 18px;
-}
-#dataList {
-  margin-top: 18px;
-  font-size: 1.08rem;
-}
-.data-row {
-  padding: 12px 8px;
-  border-bottom: 1px solid #e5e7eb;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: background 0.2s;
-}
-.data-row.selected, .data-row:hover {
-  background: #e0e7ff;
-}
+#chartContainer { background: #f1f5f9; border-radius: 14px; padding: 12px 6px 6px 6px; margin-bottom: 12px; }
+#dataList { margin-top: 10px; font-size: 1rem; }
+.data-row { padding: 10px 8px; border-bottom: 1px solid #e5e7eb; cursor: pointer; border-radius: 6px; }
+.data-row.selected, .data-row:hover { background: #e0e7ff; }
 
-@media (max-width: 600px) {
-  .container {
-    padding: 12px 2px 10px 2px;
-  }
-  .main-title {
-    font-size: 1.3rem;
-  }
-  .button-group button, .tab-btn, #exportBtn, .import-label {
-    font-size: 1rem;
-    padding: 10px 0;
-  }
-  .slider-value {
-    font-size: 1.3rem;
-  }
-  input[type="date"] {
-    width: 90%;
-    min-width: 120px;
-    max-width: 100%;
-  }
-}
+.topbar { position: sticky; top:0; z-index: 50; height: 44px; background:#fb923c; color:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 10px; font-weight:800; }
+.topbar-title { font-size: 1rem; }
 
-/* Compact mode: small viewport height -> 모든 요소를 더 컴팩트하게 */
-.compact .container { padding: 14px 8px 6px 8px; }
-.compact .main-title { font-size: 1.4rem; margin-bottom: 6px; }
-.compact .subtitle { font-size: 0.95rem; margin-bottom: 10px; }
-.compact .card-input { padding: 6px 6px 4px 6px; margin-bottom: 2px; }
-.compact .input-label { font-size: 1rem; }
-.compact input[type="date"] { width: 90%; padding: 8px 10px; font-size: 1rem; }
-.compact .slider-custom { margin-bottom: 8px; max-width: 90%; }
-.compact .slider-value { font-size: 1.2rem; margin-top: 8px; margin-bottom: 0.2em; }
-.compact .noUi-horizontal .noUi-handle { width: 22px; height: 22px; top: -8px; }
-.compact .noUi-pips { font-size: 0.8rem; }
-.compact .button-group button { padding: 10px 0; font-size: 1rem; }
-.compact #chartContainer { padding: 6px 4px; }
-.compact #dataChart { height: 160px !important; max-height: 160px; }
-
-/* Micro mode: 전체 UI를 약 1/3 더 작게(≈ 67%) */
-.micro .container {
-  transform: scale(0.67);
-  transform-origin: top center;
-  width: calc(100% / 0.67);
-  margin-top: 12px;
-}
-.micro .main-title { font-size: 1.2rem; margin-bottom: 4px; }
-.micro .subtitle { font-size: 0.9rem; margin-bottom: 8px; }
-.micro .card-input { padding: 6px 6px 4px 6px; margin-bottom: 2px; font-size: 0.9rem; }
-.micro .input-label { font-size: 0.95rem; }
-.micro input[type="date"] { width: 80%; padding: 6px 8px; font-size: 0.95rem; }
-.micro .slider-custom { margin-bottom: 6px; max-width: 80%; }
-.micro .slider-value { font-size: 1.05rem; margin-top: 6px; margin-bottom: 0.2em; }
-.micro .noUi-horizontal .noUi-handle { width: 20px; height: 20px; top: -7px; }
-.micro .noUi-pips { font-size: 0.75rem; }
-.micro .button-group button { padding: 8px 0; font-size: 0.95rem; }
-.micro #chartContainer { padding: 6px 4px; }
-.micro #dataChart { height: 160px !important; max-height: 160px; }
+/* hide native range sliders (we use inline rulers) */
+#weightSlider, #fatSlider, #muscleSlider { display:none !important; }

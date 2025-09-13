@@ -5,10 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>健康管理アプリ</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+  <link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==">
 </head>
 <body>
+  <div class="topbar">
+    <div class="topbar-left">↩︎</div>
+    <div class="topbar-title" id="topbarDate">今日</div>
+  </div>
   <div class="container">
     <h1 class="main-title">健康管理アプリ</h1>
     <div class="subtitle">今日の健康データを入力してください</div>
@@ -20,20 +24,31 @@
       </div>
       <div class="card-input">
         <label class="input-label"><span class="input-icon">⚖️</span> 体重(kg)</label>
-        <div id="weightSliderCustom" class="slider-custom"></div>
-        <span id="weightValueCustom" class="slider-value weight">60.0kg</span>
+        <div class="weight-display-row">
+          <span id="weightValueCustom" class="slider-value weight">60.0kg</span>
+        </div>
+        <div class="ruler-wrap">
+          <div id="weightRulerTrack" class="ruler-track"></div>
+          <div class="ruler-pointer" id="weightPointer"></div>
+        </div>
         <input type="range" id="weightSlider" min="30" max="80" step="0.1">
       </div>
       <div class="card-input">
         <label class="input-label"><span class="input-icon">💧</span> 体脂肪(%)</label>
-        <div id="fatSliderCustom" class="slider-custom"></div>
         <span id="fatValueCustom" class="slider-value fat">25.0%</span>
+        <div class="ruler-wrap">
+          <div id="fatRulerTrack" class="ruler-track"></div>
+          <div class="ruler-pointer" id="fatPointer"></div>
+        </div>
         <input type="range" id="fatSlider" min="10" max="40" step="0.1">
       </div>
       <div class="card-input">
         <label class="input-label"><span class="input-icon">💪</span> 筋肉量(kg)</label>
-        <div id="muscleSliderCustom" class="slider-custom"></div>
         <span id="muscleValueCustom" class="slider-value muscle">30.0kg</span>
+        <div class="ruler-wrap">
+          <div id="muscleRulerTrack" class="ruler-track"></div>
+          <div class="ruler-pointer" id="musclePointer"></div>
+        </div>
         <input type="range" id="muscleSlider" min="10" max="50" step="0.1">
       </div>
       <div class="button-group">
@@ -59,7 +74,6 @@
     </div>
     <div id="dataList"></div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
