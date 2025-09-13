@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>健康管理アプリ</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+  <link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==">
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-left">↩︎</div>
+    <div class="topbar-title" id="topbarDate">今日</div>
+  </div>
+  <div class="container">
+    <h1 class="main-title">健康管理アプリ</h1>
+    <div class="subtitle">今日の健康データを入力してください</div>
+    <div id="feedback" class="feedback" style="display:none;"></div>
+    <form id="dataForm">
+      <div class="card-input">
+        <label class="input-label"><span class="input-icon">📅</span> 日付</label>
+        <input type="date" id="dateInput" required placeholder="年-月-日">
+      </div>
+      <div class="card-input">
+        <label class="input-label"><span class="input-icon">⚖️</span> 体重(kg)</label>
+        <div class="weight-display-row">
+          <span id="weightValueCustom" class="slider-value weight">60.0kg</span>
+        </div>
+        <div class="ruler-wrap">
+          <div id="weightRulerTrack" class="ruler-track"></div>
+          <div class="ruler-pointer" id="weightPointer"></div>
+
+          
+        </div>
+        <input type="range" id="weightSlider" min="30" max="80" step="0.1">
+      </div>
+      <div class="card-input">
+        <label class="input-label"><span class="input-icon">💧</span> 体脂肪(%)</label>
+        <span id="fatValueCustom" class="slider-value fat">25.0%</span>
+        <div class="ruler-wrap">
+          <div id="fatRulerTrack" class="ruler-track"></div>
+          <div class="ruler-pointer" id="fatPointer"></div>
+        </div>
+        <input type="range" id="fatSlider" min="10" max="40" step="0.1">
+      </div>
+      <div class="card-input">
+        <label class="input-label"><span class="input-icon">💪</span> 筋肉量(kg)</label>
+        <span id="muscleValueCustom" class="slider-value muscle">30.0kg</span>
+        <div class="ruler-wrap">
+          <div id="muscleRulerTrack" class="ruler-track"></div>
+          <div class="ruler-pointer" id="musclePointer"></div>
+        </div>
+        <input type="range" id="muscleSlider" min="10" max="50" step="0.1">
+      </div>
+      <div class="button-group">
+        <button type="submit" id="saveBtn"><span class="btn-icon">💾</span> 保存</button>
+        <button type="button" id="updateBtn" disabled><span class="btn-icon">✏️</span> 修正</button>
+        <button type="button" id="deleteBtn" disabled><span class="btn-icon">🗑️</span> 削除</button>
+      </div>
+      <div class="export-import-group">
+        <button type="button" id="exportBtn"><span class="btn-icon">⬇️</span> エクスポート</button>
+        <label class="import-label">
+          <span class="btn-icon">⬆️</span> インポート
+          <input type="file" id="importInput" accept=".json,.csv" style="display:none">
+        </label>
+      </div>
+    </form>
+    <div class="period-tabs">
+      <button class="tab-btn active" data-period="week">1週間</button>
+      <button class="tab-btn" data-period="month">1ヶ月</button>
+      <button class="tab-btn" data-period="year">1年</button>
+    </div>
+    <div id="chartContainer">
+      <canvas id="dataChart"></canvas>
+    </div>
+    <div id="dataList"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
