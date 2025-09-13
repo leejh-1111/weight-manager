@@ -83,6 +83,10 @@ input[type="range"] {
   display: none !important;
 }
 
+/* fatSlider는 표시되도록 강제 */
+#fatSlider { display: block !important; width: 80%; margin: 6px auto; }
+#weightSlider, #muscleSlider { display: block !important; width: 80%; margin: 6px auto; }
+
 .slider-custom {
   margin-bottom: 18px;
   max-width: 50%;
