@@ -15,14 +15,27 @@ const dataList = document.getElementById('dataList');
 const exportBtn = document.getElementById('exportBtn');
 const importInput = document.getElementById('importInput');
 const periodTabs = document.querySelectorAll('.tab-btn');
+const weightCalBtn = document.getElementById('weightCalBtn');
+const dateCard = document.getElementById('dateCard');
 
 // Helpers ---------------------------------------------------------------------
+const rulerBias = (()=>{ try{ return JSON.parse(localStorage.getItem('rulerBias')||'{}'); }catch{ return {}; } })();
+function saveRulerBias(){ try{ localStorage.setItem('rulerBias', JSON.stringify(rulerBias)); }catch{} }
+let weightDisplayOffset = 0; // display-only offset for weight
 function getData(){ return JSON.parse(localStorage.getItem('healthData')||'[]'); }
 function setData(d){ localStorage.setItem('healthData', JSON.stringify(d)); }
-function setWeightText(v){ if (weightLabel) weightLabel.textContent = v + 'kg'; }
-function setFatText(v){ if (fatLabel) fatLabel.textContent = v + '%'; }
-function setMuscleText(v){ if (muscleLabel) muscleLabel.textContent = v + 'kg'; }
+function setWeightText(v){ if (weightLabel) weightLabel.textContent = (Number(v) + weightDisplayOffset).toFixed(2) + 'kg'; }
+function setFatText(v){ if (fatLabel) fatLabel.textContent = Number(v).toFixed(2) + '%'; }
+function setMuscleText(v){ if (muscleLabel) muscleLabel.textContent = Number(v).toFixed(2) + 'kg'; }
 function updateSliderValues(){ setWeightText(weightSlider.value); setFatText(fatSlider.value); setMuscleText(muscleSlider.value); }
+
+// Enable/disable buttons based on current selection/date -----------------------
+function syncButtonsByDateInput(){
+  const date = dateInput?.value;
+  const exists = !!date && getData().some(d=>d.date===date);
+  if(exists){ selectedDate = date; updateBtn.disabled=false; deleteBtn.disabled=false; saveBtn.disabled=true; }
+  else { selectedDate = null; updateBtn.disabled=true; deleteBtn.disabled=true; saveBtn.disabled=false; }
+}
 
 // Feedback --------------------------------------------------------------------
 function showFeedback(msg, color = '#22c55e'){
@@ -34,8 +47,14 @@ function showFeedback(msg, color = '#22c55e'){
 // Form reset/list --------------------------------------------------------------
 let selectedDate = null;
 function resetForm(){
-  if (dateInput) dateInput.value = '';
-  weightSlider.value = 60; fatSlider.value = 25; muscleSlider.value = 30;
+  if (dateInput) {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth()+1).padStart(2,'0');
+    const dd = String(today.getDate()).padStart(2,'0');
+    dateInput.value = `${yyyy}-${mm}-${dd}`;
+  }
+  weightSlider.value = 53.5; fatSlider.value = 33; muscleSlider.value = 33;
   updateSliderValues();
   selectedDate = null; updateBtn.disabled = true; deleteBtn.disabled = true; saveBtn.disabled=false;
 }
@@ -52,6 +71,8 @@ dataList.onclick = function(e){
   const item = getData().find(d=>d.date===row.dataset.date); if(!item) return;
   dateInput.value=item.date; weightSlider.value=item.weight; fatSlider.value=item.fat; muscleSlider.value=item.muscle;
   updateSliderValues(); selectedDate=item.date; updateBtn.disabled=false; deleteBtn.disabled=false; saveBtn.disabled=true;
+  // keep list selection visible
+  renderList();
 };
 
 // Save/Update/Delete -----------------------------------------------------------
@@ -60,17 +81,20 @@ saveBtn.onclick = function(e){
   const data = getData(); if (data.some(d=>d.date===date)) return showFeedback('すでに入力された日付です。修正するにはリストから選択してください。', '#fbbf24');
   data.push({ date, weight:+weightSlider.value, fat:+fatSlider.value, muscle:+muscleSlider.value }); setData(data);
   renderList(); renderChart(currentPeriod); resetForm(); showFeedback('保存しました！');
+  syncButtonsByDateInput();
 };
 
 updateBtn.onclick = function(e){
   e.preventDefault(); if(!selectedDate) return; const data=getData(); const idx=data.findIndex(d=>d.date===selectedDate); if(idx<0) return;
   data[idx] = { date: dateInput.value, weight:+weightSlider.value, fat:+fatSlider.value, muscle:+muscleSlider.value };
   setData(data); renderList(); renderChart(currentPeriod); resetForm(); showFeedback('修正しました！', '#2563eb');
+  syncButtonsByDateInput();
 };
 
 deleteBtn.onclick = function(e){
   e.preventDefault(); if(!selectedDate) return; let data=getData(); data=data.filter(d=>d.date!==selectedDate);
   setData(data); renderList(); renderChart(currentPeriod); resetForm(); showFeedback('削除しました！', '#e11d48');
+  syncButtonsByDateInput();
 };
 
 // Import/Export ----------------------------------------------------------------
@@ -82,10 +106,10 @@ exportBtn.onclick = function(){
 
 importInput.onchange = function(e){
   const file = e.target.files[0]; if(!file) return; const reader = new FileReader();
-  reader.onload = (evt)=>{ try { const imported = JSON.parse(evt.target.result); if(!Array.isArray(imported)) throw new Error('形式が正しくありません');
+  reader.onload = (evt)=>{ try { const imported = JSON.parse(evt.target.result); if(!Array.isArray(imported)) throw new Error('형식이 올바르지 않습니다');
       const cur = getData(); const merged=[...cur]; imported.forEach(n=>{ if(!merged.some(d=>d.date===n.date)) merged.push(n); });
-      setData(merged); renderList(); renderChart(currentPeriod); alert('インポート成功');
-    } catch(err){ alert('インポート失敗: '+err.message); } importInput.value=''; };
+      setData(merged); renderList(); renderChart(currentPeriod); alert('가져오기 성공');
+    } catch(err){ alert('가져오기 실패: '+err.message); } importInput.value=''; };
   reader.readAsText(file);
 };
 
@@ -96,7 +120,7 @@ periodTabs.forEach(tab=>{ tab.onclick=()=>{ periodTabs.forEach(t=>t.classList.re
 function getPeriodData(period){
   const data = getData().sort((a,b)=>a.date.localeCompare(b.date)); const now=new Date(); let from;
   if(period==='week'){ from=new Date(now); from.setDate(now.getDate()-6); }
-  else if(period==='month'){ from=new Date(now); from.setMonth(now.getMonth()-1); }
+  else if(period==='month'){ from=new Date(now); from.setDate(now.getDate()-45); }
   else { from=new Date(now); from.setFullYear(now.getFullYear()-1); }
   return data.filter(d=> new Date(d.date) >= from);
 }
@@ -113,50 +137,148 @@ function renderChart(period){
 }
 
 // Load Chart.js then init ------------------------------------------------------
-(function loadChartJs(){ if(window.Chart) return init(); const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/chart.js'; s.onload=init; document.head.appendChild(s); })();
+(function loadChartJs(){
+  if(window.Chart) return init();
+  const s=document.createElement('script');
+  // Pin to a specific file to avoid sourcemap 404s from CDN aliasing
+  s.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js';
+  s.crossOrigin='anonymous';
+  s.onload=init; document.head.appendChild(s);
+})();
 
 function init(){
   // set placeholder (JA)
   if (dateInput) dateInput.placeholder = '年-月-日';
   // wire sliders text
   [weightSlider,fatSlider,muscleSlider].forEach(el=> el.addEventListener('input', updateSliderValues));
+  dateInput?.addEventListener('change', syncButtonsByDateInput);
   updateSliderValues(); renderList(); renderChart(currentPeriod); resetForm();
+  syncButtonsByDateInput();
   initRulers();
+  // Bias so labels align under the red bar
+  setRulerBiasTicksForAll(1.8);
+  // re-sync all rulers with the new bias
+  [weightSlider,fatSlider,muscleSlider].forEach(el=> el && el.dispatchEvent(new Event('input', {bubbles:true})));
+
+  // Make the whole date card clickable -> focus the date input
+  if (dateCard && dateInput){
+    dateCard.style.cursor = 'pointer';
+    const openPicker = ()=>{ try { if (typeof dateInput.showPicker === 'function') { dateInput.showPicker(); } else { dateInput.focus(); dateInput.click(); } } catch(_) { dateInput.focus(); } };
+    dateCard.addEventListener('click', (e)=>{ e.preventDefault(); openPicker(); });
+    dateCard.addEventListener('pointerdown', (e)=>{ e.preventDefault(); });
+    dateInput.addEventListener('click', ()=> openPicker());
+  }
+  // Display-only calibration: show 60.00kg without changing slider value
+  weightCalBtn?.addEventListener('click', ()=>{
+    const current = parseFloat(weightSlider.value);
+    weightDisplayOffset = +(59.8 - current).toFixed(2);
+    updateSliderValues();
+  });
 }
 
 // Inline rulers ---------------------------------------------------------------
 function buildInlineRuler(trackEl, min, max, step){
-  trackEl.innerHTML=''; const total=Math.round((max-min)/step);
-  for(let i=0;i<=total;i++){
-    const v=+(min+i*step).toFixed(1); const div=document.createElement('div');
+  // Canvas-based ruler for pixel-perfect rendering with wide scroll
+  const canvas = trackEl.querySelector('canvas'); if(!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const padding = 40; const topPad = 10; const bottomPad = 26;
+  const visibleW = trackEl.clientWidth; const height = trackEl.clientHeight;
+  const totalSteps = Math.round((max-min)/step);
+  const pxPerStep = 24; // finer spacing per 0.1 step for smoother control
+  const fullW = padding*2 + pxPerStep*totalSteps;
+  canvas.width = Math.max(1, Math.floor(fullW*dpr)); canvas.height = Math.max(1, Math.floor(height*dpr));
+  canvas.style.width = fullW + 'px'; canvas.style.height = height + 'px';
+  const ctx = canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,fullW,height);
+  ctx.translate(padding, topPad);
+  for(let i=0;i<=totalSteps;i++){
+    const x = Math.round(i*pxPerStep) + 0.5; // pixel grid alignment
     const isMajor = (i % Math.round(1/step) === 0);
-    div.className='ruler-tick'+(isMajor?' major':'');
-    const t=document.createElement('div'); t.className='t';
-    const lbl=document.createElement('div'); lbl.className='label'; if(isMajor) lbl.textContent=String(v).replace(/\.0$/,'');
-    div.appendChild(t); div.appendChild(lbl); trackEl.appendChild(div);
+    ctx.strokeStyle = isMajor ? '#0f172a' : '#94a3b8';
+    ctx.lineWidth = 2;
+    const h = isMajor ? 28 : 16;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    if(isMajor){ ctx.fillStyle = '#475569'; ctx.font = '12px Noto Sans JP, Arial'; ctx.textAlign='center'; ctx.fillText(String((min+i*step).toFixed(1)).replace(/\.0$/,''), x, h+14); }
   }
 }
 
 function wireRuler(trackEl, sliderEl, labelEl, unit, min, max, step){
   if(!trackEl||!sliderEl) return; buildInlineRuler(trackEl,min,max,step);
-  const getStepPx=()=>{ const a=trackEl.children[0], b=trackEl.children[1]; return (!a||!b)?16:Math.max(8, Math.round(b.getBoundingClientRect().left - a.getBoundingClientRect().left)); };
+  // Geometry helpers -----------------------------------------------------------
+  const getStepPx=()=> 24; // match buildInlineRuler spacing
+  const getPaddingLeft=()=>{ const cs = window.getComputedStyle(trackEl); const pl = parseFloat(cs.paddingLeft||'0'); return isNaN(pl)?0:pl; };
   const center=()=> trackEl.clientWidth/2;
+  // For canvas-based ruler, ticks start exactly at left padding
+  const calcOriginOffset=()=> getPaddingLeft();
+  let originOffset = calcOriginOffset();
+  const type = trackEl.id.indexOf('weight')===0?'weight':(trackEl.id.indexOf('fat')===0?'fat':'muscle');
+  const getBias=()=> Number(rulerBias[type]||0);
+  const setBias=(b)=>{ rulerBias[type]=b; saveRulerBias(); };
   const toIndex=(v)=> Math.round((v-min)/step);
-  const scrollToIndex=(idx)=>{ trackEl.scrollLeft = idx*getStepPx() - center(); };
-  const syncFromSlider=()=>{ const v=parseFloat(sliderEl.value); if(labelEl) labelEl.textContent=v+unit; scrollToIndex(toIndex(v)); highlightNearestLabel(trackEl); };
+  const clampIdx=(i)=> Math.max(0, Math.min(i, Math.round((max-min)/step)));
+  let isSyncing=false, snapT;
+  const scrollToIndex=(idx)=>{ isSyncing=true; trackEl.scrollLeft = Math.max(0, idx*getStepPx() + originOffset - center() + getBias()); requestAnimationFrame(()=>{ isSyncing=false; }); };
+  const valueFromScroll=()=>{ const px = trackEl.scrollLeft + center() - originOffset - getBias(); const raw = px/getStepPx(); const idx = clampIdx(Math.round(raw + 1e-3)); return { idx, val: +(min + idx*step).toFixed(1) }; };
+  const updateLabelFromSlider=()=>{ const v=parseFloat(sliderEl.value); if(labelEl) labelEl.textContent = Number(v).toFixed(2)+unit; };
+  const syncFromSlider=()=>{ const val=+parseFloat(sliderEl.value).toFixed(1); sliderEl.value=val; updateLabelFromSlider(); scrollToIndex(toIndex(val)); highlightNearestLabel(trackEl); };
   sliderEl.addEventListener('input', syncFromSlider);
-  trackEl.addEventListener('scroll', ()=>{ window.requestAnimationFrame(()=>{
-    const idx = Math.round((trackEl.scrollLeft + center())/getStepPx());
-    const v = +(min + idx*step).toFixed(1);
-    sliderEl.value = v; if(labelEl) labelEl.textContent = v+unit; highlightNearestLabel(trackEl);
-    updateSliderValues();
-  }); });
-  // snap
-  let snapT; trackEl.addEventListener('scroll', ()=>{ clearTimeout(snapT); snapT=setTimeout(()=>{ scrollToIndex(Math.round((trackEl.scrollLeft + center())/getStepPx())); }, 60); }, {passive:true});
+  const onScroll = ()=>{
+    if(isSyncing) return;
+    const g = valueFromScroll();
+    const cur = parseFloat(sliderEl.value);
+    if (Math.abs(g.val - cur) > 0.6) { scrollToIndex(toIndex(cur)); return; }
+    sliderEl.value=g.val; updateLabelFromSlider(); highlightNearestLabel(trackEl);
+  };
+  trackEl.addEventListener('scroll', ()=>{ window.requestAnimationFrame(onScroll); });
+  const scheduleSnap=()=>{ if(isSyncing) return; clearTimeout(snapT); snapT=setTimeout(()=>{ originOffset=calcOriginOffset(); const g=valueFromScroll();
+      // Auto 1px calibration: measure residual error and round to nearest pixel
+      const residual = (trackEl.scrollLeft + center()) - (originOffset + getBias() + g.idx*getStepPx());
+      const corr = Math.round(residual);
+      if (Math.abs(corr) <= 1) { rulerBias[type] = getBias() + corr; saveRulerBias(); }
+      scrollToIndex(g.idx); sliderEl.value=g.val; updateLabelFromSlider(); highlightNearestLabel(trackEl); }, 120); };
+  trackEl.addEventListener('scroll', scheduleSnap, {passive:true});
+  // Manual micro-calibration: double-click the blue value to align current value to center
+  if(labelEl){
+    labelEl.addEventListener('dblclick', ()=>{
+      const idx = toIndex(parseFloat(sliderEl.value));
+      const target = idx*getStepPx() + originOffset - center() + getBias();
+      const current = trackEl.scrollLeft;
+      const residual = target - current; // px
+      const newBias = getBias() - Math.round(residual);
+      setBias(newBias);
+      scrollToIndex(idx);
+    });
+  }
   // drag support (track/pointer/wrap)
   addDragScroll(trackEl.parentElement, trackEl); addDragScroll(trackEl, trackEl); addPointerDrag(trackEl.parentElement.querySelector('.ruler-pointer'), trackEl);
   // initial
   syncFromSlider();
+}
+
+// Fine recenter helper (1px precision)
+function recenterRuler(kind){
+  const trackId = kind==='weight'?'weightRulerTrack':(kind==='fat'?'fatRulerTrack':'muscleRulerTrack');
+  const sliderEl = kind==='weight'?weightSlider:(kind==='fat'?fatSlider:muscleSlider);
+  const min = kind==='weight'?40:(kind==='fat'?10:10);
+  const step = 0.1;
+  const trackEl = document.getElementById(trackId); if(!trackEl||!sliderEl) return;
+  const getPaddingLeft=()=>{ const cs = window.getComputedStyle(trackEl); const pl = parseFloat(cs.paddingLeft||'0'); return isNaN(pl)?0:pl; };
+  const center=()=> trackEl.clientWidth/2;
+  const originOffset = getPaddingLeft();
+  const stepPx = 24;
+  const type = kind;
+  const bias = Number(rulerBias[type]||0);
+  const idx = Math.round((parseFloat(sliderEl.value)-min)/step);
+  const expected = idx*stepPx + originOffset - center() + bias;
+  const actual = trackEl.scrollLeft;
+  const corr = Math.round(actual - expected);
+  if (Math.abs(corr) !== 0){ rulerBias[type] = bias + corr; saveRulerBias(); }
+}
+
+// Set bias for all rulers in ticks (each tick = 0.1 step)
+function setRulerBiasTicksForAll(ticks){
+  const pxPerStep = 24; // keep in sync with buildInlineRuler/getStepPx
+  const px = Math.round(ticks * pxPerStep);
+  rulerBias.weight = px; rulerBias.fat = px; rulerBias.muscle = px; saveRulerBias();
 }
 
 function highlightNearestLabel(trackEl){
@@ -184,13 +306,23 @@ function addPointerDrag(pointerEl, trackEl){
 }
 
 function initRulers(){
-  wireRuler(document.getElementById('weightRulerTrack'), weightSlider, weightLabel, 'kg', 30, 80, 0.1);
+  wireRuler(document.getElementById('weightRulerTrack'), weightSlider, weightLabel, 'kg', 40, 80, 0.1);
   wireRuler(document.getElementById('fatRulerTrack'), fatSlider, fatLabel, '%', 10, 40, 0.1);
   wireRuler(document.getElementById('muscleRulerTrack'), muscleSlider, muscleLabel, 'kg', 10, 50, 0.1);
-  // clicking large value recenters ruler
-  weightLabel?.addEventListener('click', ()=> wireRuler(document.getElementById('weightRulerTrack'), weightSlider, weightLabel, 'kg', 30,80,0.1));
-  fatLabel?.addEventListener('click', ()=> wireRuler(document.getElementById('fatRulerTrack'), fatSlider, fatLabel, '%', 10,40,0.1));
-  muscleLabel?.addEventListener('click', ()=> wireRuler(document.getElementById('muscleRulerTrack'), muscleSlider, muscleLabel, 'kg', 10,50,0.1));
+  // clicking large value → prompt numeric input and apply
+  function promptAndSet(sliderEl, labelEl, trackId, unit, min, max, step){
+    const cur = parseFloat(sliderEl.value || min);
+    const input = prompt(`${unit==='%'?'값':'값(kg)'}을 입력하세요`, cur.toFixed(2));
+    if(input===null) return; const v=parseFloat(input);
+    if(isNaN(v)) return alert('숫자를 입력해주세요');
+    const clamped = Math.min(max, Math.max(min, v));
+    sliderEl.value = (+clamped.toFixed(1));
+    updateSliderValues();
+    wireRuler(document.getElementById(trackId), sliderEl, labelEl, unit, min, max, step);
+  }
+  weightLabel?.addEventListener('click', ()=> promptAndSet(weightSlider, weightLabel, 'weightRulerTrack', 'kg', 30,80,0.1));
+  fatLabel?.addEventListener('click', ()=> promptAndSet(fatSlider, fatLabel, 'fatRulerTrack', '%', 10,40,0.1));
+  muscleLabel?.addEventListener('click', ()=> promptAndSet(muscleSlider, muscleLabel, 'muscleRulerTrack', 'kg', 10,50,0.1));
 }
 
 // Topbar date -----------------------------------------------------------------
