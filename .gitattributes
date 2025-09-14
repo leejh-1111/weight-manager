@@ -1,0 +1,17 @@
+# Normalize line endings and avoid LF/CRLF warnings
+
+# Default: auto-detect text files
+* text=auto
+
+# Force LF for web sources
+*.js   text eol=lf
+*.ts   text eol=lf
+*.css  text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+
+# Keep Windows endings for batch scripts
+*.bat  text eol=crlf
+
+
